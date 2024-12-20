@@ -17,7 +17,6 @@ export default function RootLayout({children,}) {
       <html lang="en" webcrx="">
         <body>
           
-          
           {children}
         </body>
       </html>

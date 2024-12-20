@@ -1,5 +1,6 @@
+
 import Image from 'next/image';
-import { SignIn } from '@clerk/nextjs';
+import { SignUp } from '@clerk/nextjs';
 
 export default function Page() {
   return (
@@ -14,19 +15,9 @@ export default function Page() {
       />
 
       {/* Sign-In Component */}
-      <div className="relative   z-10 p-6 rounded-lg shadow-lg">
-        <SignIn appearance={{
-              elements: {
-                formButtonPrimary: {
-                  fontSize: 14,
-                  textTransform: 'none',
-                  backgroundColor: '#611BBD',
-                  '&:hover, &:focus, &:active': {
-                    backgroundColor: '#49247A',
-                  },
-                },
-              },
-            }}/>
+      <div className="flex items-center justify-center">
+        <SignUp 
+        forceRedirectUrl="/Userpage"/>
       </div>
     </div>
   );

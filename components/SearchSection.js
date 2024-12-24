@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Search, Clock, Star, Navigation } from "lucide-react";
+import { Search, Clock, Star, Navigation, MapPin } from "lucide-react";
 import Input from "@mui/material/Input";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -13,6 +13,9 @@ const SearchSection = ({
   priceRange = [0, 100],
   setPriceRange,
 }) => {
+  const [pickup, setPickup] = React.useState("");
+  const [destination, setDestination] = React.useState("");
+
   const recentSearches = [
     { id: 1, location: "Manhattan, NY", type: "Taxi" },
     { id: 2, location: "Brooklyn Bridge", type: "Package" },
@@ -26,16 +29,25 @@ const SearchSection = ({
   ];
 
   return (
-    <div className="w-1/4 p-6 bg-gray-900 border-r border-gray-800 overflow-y-auto mt-24 text-gray-100">
-      {/* Search Input */}
-      <div className="mb-8">
+    <div className="w-1/4 p-6 bg-[#0a0a0a] border-r border-gray-800 overflow-y-auto mt-28 text-gray-100">
+      {/* Location Inputs */}
+      <div className="mb-8 space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search locations..."
+            placeholder="Enter pickup location"
             className="pl-10 bg-gray-800 border-gray-700 rounded-lg w-full text-gray-100 placeholder-gray-400"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={pickup}
+            onChange={(e) => setPickup(e.target.value)}
+          />
+        </div>
+        <div className="relative">
+          <Navigation className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder="Enter destination"
+            className="pl-10 bg-gray-800 border-gray-700 rounded-lg w-full text-gray-100 placeholder-gray-400"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
           />
         </div>
       </div>
@@ -54,25 +66,23 @@ const SearchSection = ({
       </div>
 
       {/* Price Range */}
-      {/* Price Range */}
-<Card className="mb-6 bg-gray-800 border border-gray-700">
-  <CardContent className="p-4">
-    <div className="flex justify-between mb-2">
-      <h3 className="font-semibold text-black">Price Range</h3> {/* Fixed text color */}
-      <span className="text-sm text-gray-400">
-        ${priceRange[0]} - ${priceRange[1]}
-      </span>
-    </div>
-    <Slider
-      value={priceRange} // Controlled component
-      max={100}
-      step={1}
-      className="my-4"
-      onChange={(e, newValue) => setPriceRange(newValue)} // Update state on change
-    />
-  </CardContent>
-</Card>
-
+      <Card className="mb-6 bg-gray-800 border border-gray-700">
+        <CardContent className="p-4">
+          <div className="flex justify-between mb-2">
+            <h3 className="font-semibold text-gray-100">Price Range</h3>
+            <span className="text-sm text-gray-400">
+              ${priceRange[0]} - ${priceRange[1]}
+            </span>
+          </div>
+          <Slider
+            value={priceRange}
+            max={100}
+            step={1}
+            className="my-4"
+            onChange={(e, newValue) => setPriceRange(newValue)}
+          />
+        </CardContent>
+      </Card>
 
       {/* Recent Searches */}
       <div className="mb-8">

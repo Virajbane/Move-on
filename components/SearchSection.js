@@ -29,7 +29,7 @@ const SearchSection = ({
   ];
 
   return (
-    <div className="w-1/4 p-6 bg-[#0a0a0a] border-r border-gray-800 overflow-y-auto mt-28 text-gray-100">
+    <div className="w-1/4 p-6 bg-[#0a0a0a] border-4  rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
       {/* Location Inputs */}
       <div className="mb-8 space-y-4">
         <div className="relative">

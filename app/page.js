@@ -1,3 +1,5 @@
+import EnhancedHomeSections from "@/components/FootterSection";
+import FootterSection from "@/components/FootterSection";
 import Header from "@/components/Header";
 import ImageSlideShow from "@/components/ImageSlider";
 import { WorldMap } from "@/components/ui/world-map";
@@ -12,6 +14,7 @@ export default function Home() {
       <Header />
       <WorldMapDemo/>
       <ImageSlideShow/>
+      <EnhancedHomeSections/>
       
     </div>
     

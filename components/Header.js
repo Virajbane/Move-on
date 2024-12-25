@@ -19,10 +19,10 @@ const Header = () => {
 
   return (
     <div className="flex justify-center w-full fixed top-0 z-50 px-4 pt-4">
-      <header className="w-10/12 bg-white shadow-md rounded-[50px]">
+      <header className="w-10/12 border-2 border-slate-500 shadow-md rounded-[50px]">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Company Name */}
-          <h1 className="text-2xl font-bold text-blue-600 animate-pulse">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent ">
             MoveOn
           </h1>
 

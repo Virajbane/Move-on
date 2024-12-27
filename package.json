@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "resolutions": {
-  "@emotion/react": "^11.x"
- },
+    "@emotion/react": "^11.x"
+  },
   "dependencies": {
     "@clerk/nextjs": "^6.9.3",
     "@clerk/themes": "^2.2.2",
@@ -28,12 +28,11 @@
     "react-dom": "^19.0.0",
     "react-google-places-autocomplete": "^4.1.0",
     "react-icons": "^5.4.0",
-    "tailwind-merge": "^2.5.5"
-    
+    "tailwind-merge": "^2.5.5",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16"
   }
-  
 }

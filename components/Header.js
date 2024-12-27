@@ -18,7 +18,7 @@ const Header = () => {
   }, [isSignedIn, router]); // Dependency array to watch for changes in isSignedIn
 
   return (
-    <div className="flex justify-center w-full fixed top-0 z-50 px-4 pt-4">
+    <div className="flex justify-center w-full pb-3 fixed bg-black top-0 z-50 px-4 pt-4">
       <header className="w-10/12 border-2 border-slate-500 shadow-md rounded-[50px]">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           {/* Company Name */}

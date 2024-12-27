@@ -4,9 +4,9 @@ import { motion } from "motion/react";
 
 export function WorldMapDemo() {
   return (
-    (<div className=" py-40 dark:bg-black bg-white w-full">
-      <div className="max-w-7xl  py-6  mx-auto text-center">
-        <p className="font-bold text-2xl md:text-4xl dark:text-white text-black">
+    (<div className=" py-40 dark:bg-black bg-black w-full">
+      <div className="max-w-7xl  py-4  mx-auto text-center">
+        <p className="font-bold text-2xl md:text-4xl  !text-white">
         Seamless{" "}
           <span className="text-neutral-400">
             {"Journeys".split("").map((word, idx) => (
@@ -21,7 +21,7 @@ export function WorldMapDemo() {
             ))}
           </span>
         </p>
-        <p className="text-sm md:text-lg text-neutral-500 max-w-6xl mx-auto py-4">
+        <p className="text-sm md:text-lg text-neutral-500 max-w-6xl mx-auto py-4 pb-8">
         Empower your travel. Connect effortlessly, explore freely,
          and move on with confidence. Perfect for dreamers, adventurers, and go-getters.
         </p>

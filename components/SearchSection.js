@@ -1,15 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { Search, Clock, Star, Navigation, MapPin } from "lucide-react";
 import Input from "@mui/material/Input";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-import Badge from "@mui/material/Badge";
 import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
-import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import dynamic from "next/dynamic";
 import Script from "next/script";
-import "../app/globals.css"; 
+import "../app/globals.css";
+
+const MemoizedGooglePlacesAutocomplete = memo(
+  dynamic(() => import("react-google-places-autocomplete"), { ssr: false })
+);
 
 const SearchSection = ({
   searchQuery,
@@ -19,32 +21,14 @@ const SearchSection = ({
 }) => {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  
   const [pickupCoordinates, setPickupCoordinates] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
-
   const [recentSearches, setRecentSearches] = useState([
-    {
-      id: 1,
-      pickup: "Manhattan, NY",
-      destination: "JFK Airport",
-      type: "Taxi",
-    },
-    {
-      id: 2,
-      pickup: "Brooklyn Bridge",
-      destination: "Times Square",
-      type: "Package",
-    },
-    {
-      id: 3,
-      pickup: "Central Park",
-      destination: "Newark Airport",
-      type: "Delivery",
-    },
+    { id: 1, pickup: "Manhattan, NY", destination: "JFK Airport", type: "Taxi" },
+    { id: 2, pickup: "Brooklyn Bridge", destination: "Times Square", type: "Package" },
+    { id: 3, pickup: "Central Park", destination: "Newark Airport", type: "Delivery" },
   ]);
   const [activeSearchId, setActiveSearchId] = useState(null);
-
   const [nextId, setNextId] = useState(recentSearches.length + 1);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
 
@@ -55,52 +39,54 @@ const SearchSection = ({
         newSearch,
         ...prevSearches.slice(0, 4), // Limit to 5 recent searches
       ]);
-      setNextId(nextId + 1); // Increment the ID counter
+      setNextId(nextId + 1);
     }
   };
 
   const handleRecentSearchClick = (searchId) => {
-    setActiveSearchId((prev) => (prev === searchId ? null : searchId)); // Toggle visibility
+    setActiveSearchId((prev) => (prev === searchId ? null : searchId));
   };
 
-  const handleLocationClick = (location) => {
-    if (!pickup) {
-      setPickup(location.name);
+  const handlePlaceSelect = (selected, type) => {
+  const address = selected?.label || "";
+
+  // Handle case where no address is selected or input is cleared
+  if (!address) {
+    console.log("No address selected or input is cleared.");
+    return; // Exit early if no valid address is provided
+  }
+
+  const geocoder = new window.google.maps.Geocoder();
+
+  geocoder.geocode({ address }, (results, status) => {
+    if (status === "OK" && results?.length > 0) {
+      const lat = results[0].geometry.location.lat();
+      const lng = results[0].geometry.location.lng();
+
+      // Create the key-value pair
+      const locationDetails = {
+        type: type === "pickup" ? "Pickup Location" : "Destination Location",
+        label: address,
+        latitude: lat,
+        longitude: lng,
+      };
+
+      // Print the details to the console
+      console.log(locationDetails);
     } else {
-      setDestination(location.name);
+      console.error(
+        `Geocode was not successful for the following reason: ${status}`
+      );
     }
-  };
+  });
+};
 
-  // Function to get the coordinates (latitude, longitude)
-  const handlePlaceSelect = (selected) => {
-    const address = selected?.label || "";
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder.geocode({ address }, (results, status) => {
-      if (status === "OK") {
-        const lat = results[0].geometry.location.lat();
-        const lng = results[0].geometry.location.lng();
-        
-        if (!pickup) {
-          setPickup(address);
-          setPickupCoordinates({ lat, lng });
-        } else {
-          setDestination(address);
-          setDestinationCoordinates({ lat, lng });
-        }
-      } else {
-        console.error("Geocode was not successful for the following reason: " + status);
-      }
-    });
-  };
-
-  const GooglePlacesAutocomplete = dynamic(
-    () => import("react-google-places-autocomplete"),
-    { ssr: false }
-  );
+  
+  
+  
 
   return (
-    <div className="w-1/4 p-6 bg-[#0a0a0a] border-4 rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
+    <div className=" p-6 bg-[#0a0a0a] border-4 rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
       {/* Get Ride Section */}
       <div className="mb-8 border-4 rounded-[50px] border-gray-600">
         <h2 className="text-xl font-bold ml-7 m-6">Get Ride</h2>
@@ -112,19 +98,19 @@ const SearchSection = ({
               src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places`}
               strategy="beforeInteractive"
             />
-            <GooglePlacesAutocomplete
+            <MemoizedGooglePlacesAutocomplete
               apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
               selectProps={{
                 value: pickup ? { label: pickup, value: pickup } : null,
                 onChange: (selected) => {
                   setPickup(selected?.label || "");
-                  handlePlaceSelect(selected);
+                  handlePlaceSelect(selected, "pickup"); // Pass the selected place
                 },
                 placeholder: "Enter pickup location",
                 isClearable: true,
                 className: "w-[90%] ml-10 p-3",
                 components: {
-                  DropdownIndicator: false,
+                  DropdownIndicator:false
                 },
                 styles: {
                   control: (provided) => ({
@@ -145,7 +131,7 @@ const SearchSection = ({
               }}
             />
           </div>
-          
+
           {/* Destination Field */}
           <div className="relative w-full border-2 border-gray-700 rounded-lg">
             <Navigation className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -153,21 +139,21 @@ const SearchSection = ({
               src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places`}
               strategy="beforeInteractive"
             />
-            <GooglePlacesAutocomplete
+            <MemoizedGooglePlacesAutocomplete
               apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
               selectProps={{
                 value: destination
                   ? { label: destination, value: destination }
                   : null,
-                onChange: (selected) => {
-                  setDestination(selected?.label || "");
-                  handlePlaceSelect(selected);
-                },
+                  onChange: (selected) => {
+                    setDestination(selected?.label || "");
+                    handlePlaceSelect(selected, "destination"); // Pass the selected place
+                  },
                 placeholder: "Enter Drop location",
                 isClearable: true,
                 className: "w-[90%] ml-10 p-3",
                 components: {
-                  DropdownIndicator: false,
+                  DropdownIndicator:false
                 },
                 styles: {
                   control: (provided) => ({

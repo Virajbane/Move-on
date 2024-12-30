@@ -14,15 +14,21 @@ const MemoizedGooglePlacesAutocomplete = memo(
 );
 
 const SearchSection = ({
-  searchQuery,
+  setPickupCoordinates,
+  setDestinationCoordinates,
+  setMapCenter,
+  setZoom,
+  setMarkersVisible,
   setSearchQuery,
   priceRange = [0, 100],
   setPriceRange,
 }) => {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  const [pickupCoordinates, setPickupCoordinates] = useState(null);
-  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
+  const [pickupCoordinatesState, setPickupCoordinatesState] = useState({ lat: 0, lng: 0 });
+  const [destinationCoordinatesState, setDestinationCoordinatesState] = useState({ lat: 0, lng: 0 });
+  const [markersVisibleState, setMarkersVisibleState] = useState(false);
+ 
   const [recentSearches, setRecentSearches] = useState([
     { id: 1, pickup: "Manhattan, NY", destination: "JFK Airport", type: "Taxi" },
     { id: 2, pickup: "Brooklyn Bridge", destination: "Times Square", type: "Package" },
@@ -34,52 +40,96 @@ const SearchSection = ({
 
   const handleSearchClick = () => {
     if (pickup && destination) {
-      const newSearch = { id: nextId, pickup, destination, type: "Custom" };
-      setRecentSearches((prevSearches) => [
-        newSearch,
-        ...prevSearches.slice(0, 4), // Limit to 5 recent searches
-      ]);
-      setNextId(nextId + 1);
+      // Validate lat and lng for both pickup and destination
+      const pickupLat = pickupCoordinatesState.lat && !isNaN(pickupCoordinatesState.lat) ? pickupCoordinatesState.lat : 0;
+      const pickupLng = pickupCoordinatesState.lng && !isNaN(pickupCoordinatesState.lng) ? pickupCoordinatesState.lng : 0;
+      const destinationLat = destinationCoordinatesState.lat && !isNaN(destinationCoordinatesState.lat) ? destinationCoordinatesState.lat : 0;
+      const destinationLng = destinationCoordinatesState.lng && !isNaN(destinationCoordinatesState.lng) ? destinationCoordinatesState.lng : 0;
+
+      // Only proceed if the lat and lng values are valid
+      if (!isNaN(pickupLat) && !isNaN(pickupLng) && !isNaN(destinationLat) && !isNaN(destinationLng)) {
+        // Create new search entry
+        const newSearch = { id: nextId, pickup, destination, type: "Custom" };
+
+        // Update recent searches
+        setRecentSearches((prevSearches) => [
+          newSearch,
+          ...prevSearches.slice(0, 4), // Limit to 5 recent searches
+        ]);
+
+        // Increment the next search ID for uniqueness
+        setNextId(nextId + 1);
+
+        // Calculate the midpoint for map center
+        const lat = (pickupLat + destinationLat) / 2;
+        const lng = (pickupLng + destinationLng) / 2;
+
+        // Set the map center only if setMapCenter is available
+        setMapCenter?.({ lat, lng });
+
+        // Calculate the zoom level based on the distance between pickup and destination
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          new google.maps.LatLng(pickupLat, pickupLng),
+          new google.maps.LatLng(destinationLat, destinationLng)
+        );
+
+        // Dynamically set the zoom level based on distance
+        const zoomLevel = distance > 50000 ? 10 : distance > 20000 ? 12 : 14;
+
+        // Set the zoom level only if setZoom is available
+        setZoom?.(zoomLevel);
+
+        // Ensure markers are visible after clicking the search button
+        if (setMarkersVisible) {
+          setMarkersVisible(true);
+        }
+      } else {
+        console.error("Invalid coordinates: ", pickupLat, pickupLng, destinationLat, destinationLng);
+      }
     }
   };
+  
+  
+  
 
   const handleRecentSearchClick = (searchId) => {
     setActiveSearchId((prev) => (prev === searchId ? null : searchId));
   };
 
   const handlePlaceSelect = (selected, type) => {
-  const address = selected?.label || "";
-
-  // Handle case where no address is selected or input is cleared
-  if (!address) {
-    console.log("No address selected or input is cleared.");
-    return; // Exit early if no valid address is provided
-  }
-
-  const geocoder = new window.google.maps.Geocoder();
-
-  geocoder.geocode({ address }, (results, status) => {
-    if (status === "OK" && results?.length > 0) {
-      const lat = results[0].geometry.location.lat();
-      const lng = results[0].geometry.location.lng();
-
-      // Create the key-value pair
-      const locationDetails = {
-        type: type === "pickup" ? "Pickup Location" : "Destination Location",
-        label: address,
-        latitude: lat,
-        longitude: lng,
-      };
-
-      // Print the details to the console
-      console.log(locationDetails);
-    } else {
-      console.error(
-        `Geocode was not successful for the following reason: ${status}`
-      );
+    const address = selected?.label || "";
+  
+    if (!address) {
+      console.log("No address selected or input is cleared.");
+      return;
     }
-  });
-};
+  
+    if (typeof window !== "undefined" && window.google && window.google.maps) {
+      const geocoder = new window.google.maps.Geocoder();
+  
+      geocoder.geocode({ address }, (results, status) => {
+        if (status === "OK" && results?.length > 0) {
+          const lat = results[0].geometry.location.lat();
+          const lng = results[0].geometry.location.lng();
+  
+          if (!isNaN(lat) && !isNaN(lng)) {
+            if (type === "pickup") {
+              setPickupCoordinates({ lat, lng });
+            } else if (type === "destination") {
+              setDestinationCoordinates({ lat, lng });
+            }
+          } else {
+            console.error('Invalid coordinates: ', lat, lng);
+          }
+        } else {
+          console.error(`Geocode was not successful for the following reason: ${status}`);
+        }
+      });
+    } else {
+      console.error("Google Maps API is not loaded yet.");
+    }
+  };
+  
 
   
   
@@ -94,10 +144,7 @@ const SearchSection = ({
           {/* Pickup Field */}
           <div className="relative w-full border-2 border-gray-700 rounded-lg">
             <MapPin className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Script
-              src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places`}
-              strategy="beforeInteractive"
-            />
+            
             <MemoizedGooglePlacesAutocomplete
               apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
               selectProps={{
@@ -135,10 +182,7 @@ const SearchSection = ({
           {/* Destination Field */}
           <div className="relative w-full border-2 border-gray-700 rounded-lg">
             <Navigation className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Script
-              src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places`}
-              strategy="beforeInteractive"
-            />
+            
             <MemoizedGooglePlacesAutocomplete
               apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
               selectProps={{

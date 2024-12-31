@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useCallback, memo } from "react";
 import { Search, Clock, Star, Navigation, MapPin } from "lucide-react";
 import Input from "@mui/material/Input";
@@ -17,6 +18,8 @@ const SearchSection = ({
   setPickupCoordinates,
   setDestinationCoordinates,
   setMapCenter,
+  handleSearchClick,
+  clearSearch,
   setZoom,
   setMarkersVisible,
   setSearchQuery,
@@ -38,47 +41,58 @@ const SearchSection = ({
   const [nextId, setNextId] = useState(recentSearches.length + 1);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
 
-  const handleSearchClick = () => {
+  
+const OnSearchButtonClick = () => {
+    handleSearchClick();
+    handleSearchButtonClick(); // Trigger search button click logic
+  };
+  
+  const handleSearchButtonClick = () => {
+    
     if (pickup && destination) {
       // Validate lat and lng for both pickup and destination
       const pickupLat = pickupCoordinatesState.lat && !isNaN(pickupCoordinatesState.lat) ? pickupCoordinatesState.lat : 0;
       const pickupLng = pickupCoordinatesState.lng && !isNaN(pickupCoordinatesState.lng) ? pickupCoordinatesState.lng : 0;
       const destinationLat = destinationCoordinatesState.lat && !isNaN(destinationCoordinatesState.lat) ? destinationCoordinatesState.lat : 0;
       const destinationLng = destinationCoordinatesState.lng && !isNaN(destinationCoordinatesState.lng) ? destinationCoordinatesState.lng : 0;
-
+  
       // Only proceed if the lat and lng values are valid
       if (!isNaN(pickupLat) && !isNaN(pickupLng) && !isNaN(destinationLat) && !isNaN(destinationLng)) {
         // Create new search entry
         const newSearch = { id: nextId, pickup, destination, type: "Custom" };
-
+  
         // Update recent searches
         setRecentSearches((prevSearches) => [
           newSearch,
           ...prevSearches.slice(0, 4), // Limit to 5 recent searches
         ]);
-
+  
         // Increment the next search ID for uniqueness
         setNextId(nextId + 1);
-
+  
         // Calculate the midpoint for map center
         const lat = (pickupLat + destinationLat) / 2;
         const lng = (pickupLng + destinationLng) / 2;
-
+  
         // Set the map center only if setMapCenter is available
         setMapCenter?.({ lat, lng });
-
+  
         // Calculate the zoom level based on the distance between pickup and destination
-        const distance = google.maps.geometry.spherical.computeDistanceBetween(
-          new google.maps.LatLng(pickupLat, pickupLng),
-          new google.maps.LatLng(destinationLat, destinationLng)
-        );
-
-        // Dynamically set the zoom level based on distance
-        const zoomLevel = distance > 50000 ? 10 : distance > 20000 ? 12 : 14;
-
-        // Set the zoom level only if setZoom is available
-        setZoom?.(zoomLevel);
-
+        if (window.google && google.maps.geometry && google.maps.geometry.spherical) {
+          const distance = google.maps.geometry.spherical.computeDistanceBetween(
+            new google.maps.LatLng(pickupLat, pickupLng),
+            new google.maps.LatLng(destinationLat, destinationLng)
+          );
+  
+          // Dynamically set the zoom level based on distance
+          const zoomLevel = distance > 50000 ? 10 : distance > 20000 ? 12 : 14;
+  
+          // Set the zoom level only if setZoom is available
+          
+        } else {
+          console.error("Google Maps API is not available or geometry library is missing.");
+        }
+  
         // Ensure markers are visible after clicking the search button
         if (setMarkersVisible) {
           setMarkersVisible(true);
@@ -86,8 +100,32 @@ const SearchSection = ({
       } else {
         console.error("Invalid coordinates: ", pickupLat, pickupLng, destinationLat, destinationLng);
       }
+    } else {
+      clearSearch();
+      setMarkersVisible(false);
+      setMapCenter({ lat: 20.5937, lng: 78.9629 }); // Reset to default center
+      setZoom(5);
     }
   };
+  
+  const handleClear = (type) => {
+    if (type === "pickup") {
+      setPickup("");
+      setPickupCoordinates(null);
+      setPickupCoordinatesState({ lat: 0, lng: 0 });
+    } else if (type === "destination") {
+      setDestination("");
+      setDestinationCoordinates(null);
+      setDestinationCoordinatesState({ lat: 0, lng: 0 });
+    }
+
+    // If both fields are empty, reset the map
+    if ((type === "pickup" && !destination) || (type === "destination" && !pickup)) {
+      clearSearch();
+      setMarkersVisible(false);
+    }
+  };
+  
   
   
   
@@ -98,37 +136,31 @@ const SearchSection = ({
 
   const handlePlaceSelect = (selected, type) => {
     const address = selected?.label || "";
+    if (!address) return;
   
-    if (!address) {
-      console.log("No address selected or input is cleared.");
-      return;
-    }
-  
-    if (typeof window !== "undefined" && window.google && window.google.maps) {
-      const geocoder = new window.google.maps.Geocoder();
-  
+    if (window.google && window.google.maps) {
+      const geocoder = new google.maps.Geocoder();
       geocoder.geocode({ address }, (results, status) => {
-        if (status === "OK" && results?.length > 0) {
+        if (status === "OK" && results.length > 0) {
           const lat = results[0].geometry.location.lat();
           const lng = results[0].geometry.location.lng();
   
-          if (!isNaN(lat) && !isNaN(lng)) {
-            if (type === "pickup") {
-              setPickupCoordinates({ lat, lng });
-            } else if (type === "destination") {
-              setDestinationCoordinates({ lat, lng });
-            }
-          } else {
-            console.error('Invalid coordinates: ', lat, lng);
+          if (type === "pickup") {
+            setPickupCoordinatesState({ lat, lng });
+            setPickupCoordinates?.({ lat, lng });
+          } else if (type === "destination") {
+            setDestinationCoordinatesState({ lat, lng });
+            setDestinationCoordinates?.({ lat, lng });
           }
         } else {
-          console.error(`Geocode was not successful for the following reason: ${status}`);
+          console.error("Geocode error: ", status);
         }
       });
     } else {
-      console.error("Google Maps API is not loaded yet.");
+      console.error("Google Maps API not loaded.");
     }
   };
+  
   
 
   
@@ -153,6 +185,7 @@ const SearchSection = ({
                   setPickup(selected?.label || "");
                   handlePlaceSelect(selected, "pickup"); // Pass the selected place
                 },
+                onClear: () => { handleClear("pickup") },
                 placeholder: "Enter pickup location",
                 isClearable: true,
                 className: "w-[90%] ml-10 p-3",
@@ -193,6 +226,7 @@ const SearchSection = ({
                     setDestination(selected?.label || "");
                     handlePlaceSelect(selected, "destination"); // Pass the selected place
                   },
+                onClear: () => { handleClear("destination") },
                 placeholder: "Enter Drop location",
                 isClearable: true,
                 className: "w-[90%] ml-10 p-3",
@@ -221,7 +255,7 @@ const SearchSection = ({
           {/* Search Button */}
           <Button
             className="w-[90%] text-white hover:bg-blue-700 hover:text-white"
-            onClick={handleSearchClick}
+            onClick={OnSearchButtonClick}
           >
             <Search className="w-4 h-4 mr-2" />
             Search Rides

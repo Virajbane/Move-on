@@ -14,9 +14,25 @@ function Userpage() {
   const [priceRange, setPriceRange] = useState([0, 100]); // State for marker visibility
   const [recentSearches, setRecentSearches] = useState([]); // Store recent searches
   const [nextId, setNextId] = useState(1); // To keep track of unique search IDs
+  const [isSearchClicked, setIsSearchClicked] = useState(false);
 
   
+  const handleSearchClick = () => {
+    setIsSearchClicked(true); // Set to true when search button is clicked
+  };
 
+  const clearSearch = () => {
+    // Reset coordinates
+    setPickupCoordinates(null);
+    setDestinationCoordinates(null);
+  
+    // Reset the state for visibility and other map-related things
+    setIsSearchClicked(false);
+    setMarkersVisible(false);
+    setZoom(5);  // Reset zoom level to initial value
+    setMapCenter({ lat: 20.5937, lng: 78.9629 }); // Reset to default center
+  };
+  
   // Update map center whenever pickup or destination coordinates change
   useEffect(() => {
     if (pickupCoordinates && destinationCoordinates) {
@@ -27,15 +43,13 @@ function Userpage() {
       setMarkersVisible(true); // Show markers after coordinates are available
     }
   }, [pickupCoordinates, destinationCoordinates]);
+  
 
   return (
     <>
       <Header />
       {/* Dynamically load the Google Maps API */}
-      <Script
-        strategy="beforeInteractive"
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_API_KEY}&libraries=places,geometry`}
-      />
+      
 
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mt-10">
         {/* Search Section */}
@@ -46,11 +60,13 @@ function Userpage() {
             setMapCenter={setMapCenter}
             setZoom={setZoom}
             setMarkersVisible={setMarkersVisible}
+            clearSearch={clearSearch}
              // Pass handleSearchClick function
             priceRange={priceRange}
             setPriceRange={setPriceRange}
             recentSearches={recentSearches} // Pass recentSearches to display them
-            setRecentSearches={setRecentSearches} // Pass setRecentSearches to manage the list
+            setRecentSearches={setRecentSearches}
+            handleSearchClick={handleSearchClick} // Pass setRecentSearches to manage the list
           />
         </div>
 
@@ -63,6 +79,9 @@ function Userpage() {
             mapCenter={mapCenter}
             zoom={zoom}
             markersVisible={markersVisible}
+            isSearchClicked={isSearchClicked}
+            clearSearch={clearSearch}
+            
           />
         </div>
       </div>

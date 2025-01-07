@@ -7,7 +7,7 @@ import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
 import dynamic from "next/dynamic";
-import Script from "next/script";
+
 import "../app/globals.css";
 
 const MemoizedGooglePlacesAutocomplete = memo(

@@ -35,8 +35,8 @@ const Googlemap = ({
   const [map, setMap] = useState(null);
   const [directions, setDirections] = useState(null);
 
-  const onLoad = useCallback((map) => {
-    setMap(map);
+  const onLoad = useCallback((mapInstance) => {
+    setMap(mapInstance); // Properly initialize map instance
     console.log("Map Loaded");
   }, []);
 

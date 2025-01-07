@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import SearchSection from "@/components/SearchSection";
 import Googlemap from "@/components/Googlemap";
-import Script from "next/script";
+
 
 function Userpage() {
   const [pickupCoordinates, setPickupCoordinates] = useState(null); // State to hold pickup coordinates

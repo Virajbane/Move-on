@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, Useref, useEffect, useState } from "react";
 import {
   GoogleMap,
   Marker,
@@ -34,6 +34,9 @@ const Googlemap = ({
 
   const [map, setMap] = useState(null);
   const [directions, setDirections] = useState(null);
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [destinationAddress, setDestinationAddress] = useState("");
+  const [clickedMarker, setClickedMarker] = useState(null);
 
   const onLoad = useCallback((mapInstance) => {
     setMap(mapInstance); // Properly initialize map instance
@@ -49,6 +52,26 @@ const Googlemap = ({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
     libraries: libraries, // Use the static libraries array
   });
+
+  useEffect(() => {
+    if (isLoaded && pickupCoordinates && destinationCoordinates) {
+      const geocoder = new google.maps.Geocoder();
+
+      // Geocode the pickup coordinates
+      geocoder.geocode({ location: pickupCoordinates }, (results, status) => {
+        if (status === google.maps.GeocoderStatus.OK) {
+          setPickupAddress(results[0]?.formatted_address || "Pickup Location");
+        }
+      });
+
+      // Geocode the destination coordinates
+      geocoder.geocode({ location: destinationCoordinates }, (results, status) => {
+        if (status === google.maps.GeocoderStatus.OK) {
+          setDestinationAddress(results[0]?.formatted_address || "Destination Location");
+        }
+      });
+    }
+  }, [isLoaded, pickupCoordinates, destinationCoordinates]);
 
   // Fetch and render the route
   useEffect(() => {
@@ -96,7 +119,12 @@ const Googlemap = ({
     isSearchClicked,
   ]);
   useEffect(() => {
-    if (!pickupCoordinates || !destinationCoordinates || !isSearchClicked || !markersVisible) {
+    if (
+      !pickupCoordinates ||
+      !destinationCoordinates ||
+      !isSearchClicked ||
+      !markersVisible
+    ) {
       setDirections(null);
       if (map) {
         map.setZoom(5);
@@ -121,12 +149,22 @@ const Googlemap = ({
         }
       }
     );
-  }, [pickupCoordinates, destinationCoordinates, markersVisible, map, mapCenter, isSearchClicked]);
+  }, [
+    pickupCoordinates,
+    destinationCoordinates,
+    markersVisible,
+    map,
+    mapCenter,
+    isSearchClicked,
+  ]);
 
   const handleClear = () => {
     // Reset both pickup and destination coordinates and directions
     setDirections(null); // Remove directions from the map
     clearSearch(); // Pass the function to clear the state in the parent component
+  };
+  const handleMarkerClick = (markerType) => {
+    setClickedMarker(markerType); // Set the clicked marker to either "pickup" or "destination"
   };
 
   if (!isLoaded) {
@@ -150,11 +188,37 @@ const Googlemap = ({
           {markersVisible && pickupCoordinates && destinationCoordinates && (
             <>
               {/* Render Pickup and Destination Markers */}
-              <Marker position={pickupCoordinates} />
-              <Marker position={destinationCoordinates} />
+              <Marker
+                position={pickupCoordinates}
+                onClick={() => handleMarkerClick("pickup")}
+                label={{
+                  text:
+                    clickedMarker === "pickup"
+                      ? pickupAddress // Show full address when clicked
+                      : pickupAddress.slice(0, 5) + "...", // Show only first 5 characters initially
+                  color: "#000000",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  backgroundColor: "#FFFFFF", // White background for the label
+                  padding: "5px",
+                }}
+              />
+              <Marker
+                position={destinationCoordinates}
+                onClick={() => handleMarkerClick("destination")}
+                label={{
+                  text:
+                    clickedMarker === "destination"
+                      ? destinationAddress // Show full address when clicked
+                      : destinationAddress.slice(0, 5) + "...", // Show only first 5 characters initially
+                  color: "#000000",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  backgroundColor: "#FFFFFF", // White background for the label
+                  padding: "5px",
+                }}
+              />
               {/* Render the route if needed */}
-              
-
             </>
           )}
 

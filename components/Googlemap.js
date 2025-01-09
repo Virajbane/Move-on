@@ -5,6 +5,7 @@ import {
   Marker,
   DirectionsRenderer,
   Polyline,
+  InfoWindow,
   useJsApiLoader,
 } from "@react-google-maps/api";
 
@@ -12,9 +13,11 @@ import {
 const libraries = ["places", "geometry"]; // Define the libraries outside of the component
 
 const Googlemap = ({
+  
   pickupCoordinates,
   destinationCoordinates,
   mapCenter,
+  
   zoom,
   markersVisible,
   isSearchClicked,
@@ -65,11 +68,16 @@ const Googlemap = ({
       });
 
       // Geocode the destination coordinates
-      geocoder.geocode({ location: destinationCoordinates }, (results, status) => {
-        if (status === google.maps.GeocoderStatus.OK) {
-          setDestinationAddress(results[0]?.formatted_address || "Destination Location");
+      geocoder.geocode(
+        { location: destinationCoordinates },
+        (results, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            setDestinationAddress(
+              results[0]?.formatted_address || "Destination Location"
+            );
+          }
         }
-      });
+      );
     }
   }, [isLoaded, pickupCoordinates, destinationCoordinates]);
 
@@ -189,41 +197,116 @@ const Googlemap = ({
             <>
               {/* Render Pickup and Destination Markers */}
               <Marker
-                position={pickupCoordinates}
-                onClick={() => handleMarkerClick("pickup")}
-                label={{
-                  text:
-                    clickedMarker === "pickup"
-                      ? pickupAddress // Show full address when clicked
-                      : pickupAddress.slice(0, 5) + "...", // Show only first 5 characters initially
-                  color: "#000000",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  backgroundColor: "#FFFFFF", // White background for the label
-                  padding: "5px",
-                }}
-              />
-              <Marker
-                position={destinationCoordinates}
-                onClick={() => handleMarkerClick("destination")}
-                label={{
-                  text:
-                    clickedMarker === "destination"
-                      ? destinationAddress // Show full address when clicked
-                      : destinationAddress.slice(0, 5) + "...", // Show only first 5 characters initially
-                  color: "#000000",
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  backgroundColor: "#FFFFFF", // White background for the label
-                  padding: "5px",
-                }}
-              />
+  position={pickupCoordinates}
+  icon={{
+    url: "/pin.png",
+    scaledSize: new google.maps.Size(30, 30),
+    anchor: new google.maps.Point(15, 15),
+  }}
+  onClick={() => handleMarkerClick("pickup")}
+  label={
+    clickedMarker !== "pickup"
+      ? { // Provide label object only when marker isn't clicked
+          text: pickupAddress?.split(",").slice(0, 2).join(", "), // Extract the first 2 parts (e.g., "Delhi, India")
+          color: "#000000",
+          fontSize: "14px",
+          fontWeight: "bold",
+          backgroundColor: "#FFFFFF", // White background for the label
+          padding: "5px",
+          borderRadius: "5px", // Rounded corners for the label box
+        }
+      : null // No label after marker is clicked
+  }
+/>
+
+{clickedMarker === "pickup" && (
+  <InfoWindow
+    position={pickupCoordinates}
+    options={{ pixelOffset: new google.maps.Size(20, -10) }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        padding: "10px",
+        borderRadius: "5px",
+        boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      <span
+        style={{
+          color: "#000",
+          fontSize: "12px",
+          fontWeight: "bold",
+        }}
+      >
+        {pickupAddress} {/* Full address shown after click */}
+      </span>
+    </div>
+  </InfoWindow>
+)}
+
+<Marker
+  position={destinationCoordinates}
+  icon={{
+    url: "/home.png",
+    scaledSize: new google.maps.Size(32, 32),
+    anchor: new google.maps.Point(16, 16),
+  }}
+  onClick={() => handleMarkerClick("destination")}
+  label={
+    clickedMarker !== "destination"
+      ? { // Provide label object only when marker isn't clicked
+          text: destinationAddress?.split(",").slice(0, 2).join(", "), // Extract the first 2 parts (e.g., "Mumbai, Maharashtra")
+          color: "#000000",
+          fontSize: "14px",
+          fontWeight: "bold",
+          backgroundColor: "#FFFFFF", // White background for the label
+          padding: "5px",
+          borderRadius: "5px", // Rounded corners for the label box
+        }
+      : null // No label after marker is clicked
+  }
+/>
+
+{clickedMarker === "destination" && (
+  <InfoWindow
+    position={destinationCoordinates}
+    options={{ pixelOffset: new google.maps.Size(20, -10) }}
+  >
+    <div
+      style={{
+        background: "#fff",
+        padding: "10px",
+        borderRadius: "5px",
+        boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+      <span
+        style={{
+          color: "#000",
+          fontSize: "12px",
+          fontWeight: "bold",
+        }}
+      >
+        {destinationAddress} {/* Full address shown after click */}
+      </span>
+    </div>
+  </InfoWindow>
+)}
+
+
+
               {/* Render the route if needed */}
             </>
           )}
 
           {/* Render the route */}
-          {directions && <DirectionsRenderer directions={directions} />}
+          {directions && (
+            <DirectionsRenderer
+              directions={directions}
+              options={{ suppressMarkers: true }}
+            />
+          )}
         </GoogleMap>
       </div>
     </div>

@@ -22,6 +22,7 @@ const SearchSection = ({
   clearSearch,
   setZoom,
   setMarkersVisible,
+  
   setSearchQuery,
   priceRange = [0, 100],
   setPriceRange,

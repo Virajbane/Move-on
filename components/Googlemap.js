@@ -204,19 +204,7 @@ const Googlemap = ({
     anchor: new google.maps.Point(15, 15),
   }}
   onClick={() => handleMarkerClick("pickup")}
-  label={
-    clickedMarker !== "pickup"
-      ? { // Provide label object only when marker isn't clicked
-          text: pickupAddress?.split(",").slice(0, 2).join(", "), // Extract the first 2 parts (e.g., "Delhi, India")
-          color: "#000000",
-          fontSize: "14px",
-          fontWeight: "bold",
-          backgroundColor: "#FFFFFF", // White background for the label
-          padding: "5px",
-          borderRadius: "5px", // Rounded corners for the label box
-        }
-      : null // No label after marker is clicked
-  }
+  
 />
 
 {clickedMarker === "pickup" && (
@@ -253,19 +241,7 @@ const Googlemap = ({
     anchor: new google.maps.Point(16, 16),
   }}
   onClick={() => handleMarkerClick("destination")}
-  label={
-    clickedMarker !== "destination"
-      ? { // Provide label object only when marker isn't clicked
-          text: destinationAddress?.split(",").slice(0, 2).join(", "), // Extract the first 2 parts (e.g., "Mumbai, Maharashtra")
-          color: "#000000",
-          fontSize: "14px",
-          fontWeight: "bold",
-          backgroundColor: "#FFFFFF", // White background for the label
-          padding: "5px",
-          borderRadius: "5px", // Rounded corners for the label box
-        }
-      : null // No label after marker is clicked
-  }
+  
 />
 
 {clickedMarker === "destination" && (

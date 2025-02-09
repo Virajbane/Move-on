@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import SearchSection from "@/components/SearchSection";
 import Googlemap from "@/components/Googlemap";
+import Script from "next/script";
 
 
 function Userpage() {
@@ -49,6 +50,7 @@ function Userpage() {
     <>
       <Header />
       {/* Dynamically load the Google Maps API */}
+      
       
 
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mt-10">

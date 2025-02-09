@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "resolutions": {
-    "@emotion/react": "^11.x"
+    "@emotion/react": "^latest"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.9.3",

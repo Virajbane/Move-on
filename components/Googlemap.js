@@ -7,10 +7,11 @@ import {
   Polyline,
   InfoWindow,
   useJsApiLoader,
+  LoadScript,
 } from "@react-google-maps/api";
 
 // Static declaration of libraries outside of the component
-const libraries = ["places", "geometry"]; // Define the libraries outside of the component
+const libraries = ["places", "geometry"];
 
 const Googlemap = ({
   
@@ -46,6 +47,9 @@ const Googlemap = ({
     console.log("Map Loaded");
   }, []);
 
+ 
+  
+
   const onUnmount = useCallback(() => {
     setMap(null);
   }, []);
@@ -55,6 +59,7 @@ const Googlemap = ({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
     libraries: libraries, // Use the static libraries array
   });
+  
 
   useEffect(() => {
     if (isLoaded && pickupCoordinates && destinationCoordinates) {
@@ -181,6 +186,7 @@ const Googlemap = ({
 
   return (
     <div className="mt-28 border-4 border-gray-800 rounded-[50px] overflow-hidden shadow-lg">
+      
       <div className="p-6">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-100">
           Google Map

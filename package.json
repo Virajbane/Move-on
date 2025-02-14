@@ -2,6 +2,7 @@
   "name": "move-on",
   "version": "0.1.0",
   "private": true,
+  "type":"module",
   "scripts": {
     "dev": "next dev",
     "build": "npm install --legacy-peer-deps && next build",

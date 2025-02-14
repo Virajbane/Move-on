@@ -6,7 +6,7 @@ import {
   DirectionsRenderer,
   Polyline,
   InfoWindow,
-  useJsApiLoader,
+  
   LoadScript,
 } from "@react-google-maps/api";
 
@@ -55,14 +55,11 @@ const Googlemap = ({
   }, []);
 
   // Load the Google Maps API
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
-    libraries: libraries, // Use the static libraries array
-  });
+  
   
 
   useEffect(() => {
-    if (isLoaded && pickupCoordinates && destinationCoordinates) {
+    if (pickupCoordinates && destinationCoordinates) {
       const geocoder = new google.maps.Geocoder();
 
       // Geocode the pickup coordinates
@@ -84,7 +81,7 @@ const Googlemap = ({
         }
       );
     }
-  }, [isLoaded, pickupCoordinates, destinationCoordinates]);
+  }, [ pickupCoordinates, destinationCoordinates]);
 
   // Fetch and render the route
   useEffect(() => {
@@ -180,9 +177,7 @@ const Googlemap = ({
     setClickedMarker(markerType); // Set the clicked marker to either "pickup" or "destination"
   };
 
-  if (!isLoaded) {
-    return <div>Loading Map...</div>;
-  }
+  
 
   return (
     <div className="mt-28 border-4 border-gray-800 rounded-[50px] overflow-hidden shadow-lg">

@@ -3,9 +3,10 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import SearchSection from "@/components/SearchSection";
 import Googlemap from "@/components/Googlemap";
+import { useJsApiLoader } from "@react-google-maps/api";
 import Script from "next/script";
 
-
+const libraries=["places","geometry"];
 function Userpage() {
   const [pickupCoordinates, setPickupCoordinates] = useState(null); // State to hold pickup coordinates
   const [destinationCoordinates, setDestinationCoordinates] = useState(null); // State to hold destination coordinates
@@ -16,6 +17,11 @@ function Userpage() {
   const [recentSearches, setRecentSearches] = useState([]); // Store recent searches
   const [nextId, setNextId] = useState(1); // To keep track of unique search IDs
   const [isSearchClicked, setIsSearchClicked] = useState(false);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
+    libraries, // Add required libraries
+  });
 
   
   const handleSearchClick = () => {
@@ -68,23 +74,27 @@ function Userpage() {
             setPriceRange={setPriceRange}
             recentSearches={recentSearches} // Pass recentSearches to display them
             setRecentSearches={setRecentSearches}
-            handleSearchClick={handleSearchClick} // Pass setRecentSearches to manage the list
+            handleSearchClick={handleSearchClick}
+            isGoogleMapsLoaded={isLoaded} // Pass setRecentSearches to manage the list
           />
         </div>
 
         {/* Google Map Section */}
         <div className="col-span-1 md:col-span-3 lg:col-span-3">
           {/* Render GoogleMap only if both coordinates are available */}
-          <Googlemap
-            pickupCoordinates={pickupCoordinates}
-            destinationCoordinates={destinationCoordinates}
-            mapCenter={mapCenter}
-            zoom={zoom}
-            markersVisible={markersVisible}
-            isSearchClicked={isSearchClicked}
-            clearSearch={clearSearch}
-            
-          />
+          {isLoaded ? ( // Only render the map if the API is loaded
+            <Googlemap
+              pickupCoordinates={pickupCoordinates}
+              destinationCoordinates={destinationCoordinates}
+              mapCenter={mapCenter}
+              zoom={zoom}
+              markersVisible={markersVisible}
+              isSearchClicked={isSearchClicked}
+              clearSearch={clearSearch}
+            />
+          ) : (
+            <div>Loading Map...</div>
+          )}
         </div>
       </div>
     </>

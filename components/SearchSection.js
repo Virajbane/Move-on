@@ -24,7 +24,7 @@ const SearchSection = ({
   clearSearch,
   setZoom,
   setMarkersVisible,
-
+  isGoogleMapsLoaded,
   setSearchQuery,
   priceRange = [0, 100],
   setPriceRange,
@@ -185,6 +185,7 @@ const SearchSection = ({
   };
 
   const handlePlaceSelect = (selected, type) => {
+    if (!isGoogleMapsLoaded) return;
     const address = selected?.label || "";
     if (!address) return;
 

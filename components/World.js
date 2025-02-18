@@ -1,5 +1,5 @@
 "use client";
-import {WorldMap} from "@/components/ui/world-map";
+import {WorldMap} from "@/components/ui/world-map.js";
 import { motion } from "motion/react";
 
 export function WorldMapDemo() {

@@ -1,22 +1,47 @@
 "use client";
-import { useRef } from "react";
-import { motion } from "framer-motion"; // Corrected package import
-import DottedMap from "dotted-map";
+import { useRef, useEffect, useState } from "react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 
 export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
   const svgRef = useRef(null);
+  const [svgMap, setSvgMap] = useState("");
   const { theme } = useTheme();
 
-  const map = new DottedMap({ height: 100, grid: "diagonal" });
+  useEffect(() => {
+    // Dynamically import DottedMap to ensure compatibility
+    import("dotted-map").then((module) => {
+      const DottedMap = module.default || module;
 
-  const svgMap = map.getSVG({
-    radius: 0.22,
-    color: theme === "dark" ?  "#00000040":"#FFFFFF40"  ,
-    shape: "circle",
-    backgroundColor: theme === "dark" ? "white":"black"  ,
-  });
+      // Create the map
+      const map = new DottedMap({ height: 100, grid: "diagonal" });
+
+      // Add pins dynamically based on the `dots` prop
+      dots.forEach((dot) => {
+        map.addPin({
+          lat: dot.start.lat,
+          lng: dot.start.lng,
+          svgOptions: { color: lineColor, radius: 0.4 },
+        });
+        map.addPin({
+          lat: dot.end.lat,
+          lng: dot.end.lng,
+          svgOptions: { color: lineColor, radius: 0.4 },
+        });
+      });
+
+      // Generate the SVG
+      const svg = map.getSVG({
+        radius: 0.22,
+        color: theme === "dark" ? "#00000040" : "#FFFFFF40",
+        shape: "circle",
+        backgroundColor: theme === "dark" ? "white" : "black",
+      });
+
+      setSvgMap(svg);
+    });
+  }, [dots, lineColor, theme]);
 
   const projectPoint = (lat, lng) => {
     const x = (lng + 180) * (800 / 360);
@@ -29,6 +54,10 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
     const midY = Math.min(start.y, end.y) - 50;
     return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
   };
+
+  if (!svgMap) {
+    return <div>Loading map...</div>; // Loading state
+  }
 
   return (
     <div className="w-full aspect-[2/1] dark:bg-black bg-black rounded-lg relative font-sans">
@@ -57,7 +86,12 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
                 strokeWidth="1"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
-                transition={{ duration: 1, delay: 0.5 * i, ease: "easeOut" }}
+                transition={{
+                  duration: 1,
+                  delay: 0.5 * i,
+                  ease: "easeOut",
+                }}
+                key={`start-upper-${i}`}
               />
             </g>
           );
@@ -74,36 +108,70 @@ export function WorldMap({ dots = [], lineColor = "#0ea5e9" }) {
 
         {dots.map((dot, i) => (
           <g key={`points-group-${i}`}>
-            <circle
-              cx={projectPoint(dot.start.lat, dot.start.lng).x}
-              cy={projectPoint(dot.start.lat, dot.start.lng).y}
-              r="2"
-              fill={lineColor}
-            />
-            <circle
-              cx={projectPoint(dot.start.lat, dot.start.lng).x}
-              cy={projectPoint(dot.start.lat, dot.start.lng).y}
-              r="2"
-              fill={lineColor}
-              opacity="0.5"
-            >
-              <animate
-                attributeName="r"
-                from="2"
-                to="8"
-                dur="1.5s"
-                begin="0s"
-                repeatCount="indefinite"
+            <g key={`start-${i}`}>
+              <circle
+                cx={projectPoint(dot.start.lat, dot.start.lng).x}
+                cy={projectPoint(dot.start.lat, dot.start.lng).y}
+                r="2"
+                fill={lineColor}
               />
-              <animate
-                attributeName="opacity"
-                from="0.5"
-                to="0"
-                dur="1.5s"
-                begin="0s"
-                repeatCount="indefinite"
+              <circle
+                cx={projectPoint(dot.start.lat, dot.start.lng).x}
+                cy={projectPoint(dot.start.lat, dot.start.lng).y}
+                r="2"
+                fill={lineColor}
+                opacity="0.5"
+              >
+                <animate
+                  attributeName="r"
+                  from="2"
+                  to="8"
+                  dur="1.5s"
+                  begin="0s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.5"
+                  to="0"
+                  dur="1.5s"
+                  begin="0s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+            </g>
+            <g key={`end-${i}`}>
+              <circle
+                cx={projectPoint(dot.end.lat, dot.end.lng).x}
+                cy={projectPoint(dot.end.lat, dot.end.lng).y}
+                r="2"
+                fill={lineColor}
               />
-            </circle>
+              <circle
+                cx={projectPoint(dot.end.lat, dot.end.lng).x}
+                cy={projectPoint(dot.end.lat, dot.end.lng).y}
+                r="2"
+                fill={lineColor}
+                opacity="0.5"
+              >
+                <animate
+                  attributeName="r"
+                  from="2"
+                  to="8"
+                  dur="1.5s"
+                  begin="0s"
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  from="0.5"
+                  to="0"
+                  dur="1.5s"
+                  begin="0s"
+                  repeatCount="indefinite"
+                />
+              </circle>
+            </g>
           </g>
         ))}
       </svg>

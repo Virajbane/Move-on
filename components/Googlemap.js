@@ -10,6 +10,7 @@ import {
   LoadScript,
 } from "@react-google-maps/api";
 
+
 // Static declaration of libraries outside of the component
 const libraries = ["places", "geometry"];
 

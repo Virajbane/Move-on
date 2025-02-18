@@ -3,8 +3,10 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import SearchSection from "@/components/SearchSection";
 import Googlemap from "@/components/Googlemap";
-import { useJsApiLoader } from "@react-google-maps/api";
-import Script from "next/script";
+import { useJsApiLoader }  from "@react-google-maps/api";
+
+
+
 
 const libraries=["places","geometry"];
 function Userpage() {

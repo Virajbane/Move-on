@@ -8,6 +8,7 @@ import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
 import dynamic from "next/dynamic";
+import CaroptionList from "./utils/CarOption"; // Import the car list component
 import "../app/globals.css";
 
 // ✅ Correctly load only once using apiKey prop
@@ -40,6 +41,11 @@ const SearchSection = ({
   const [activeSearchId, setActiveSearchId] = useState(null);
   const [nextId, setNextId] = useState(recentSearches.length + 1);
   const [showRecentSearches, setShowRecentSearches] = useState(false);
+  
+  // New states for car selection
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [distance, setDistance] = useState(0);
+  const [showCarList, setShowCarList] = useState(false);
 
   const handleSearchButtonClick = () => {
     if (pickup && destination) {
@@ -61,15 +67,17 @@ const SearchSection = ({
           google.maps.geometry &&
           google.maps.geometry.spherical
         ) {
-          const distance = google.maps.geometry.spherical.computeDistanceBetween(
+          const calculatedDistance = google.maps.geometry.spherical.computeDistanceBetween(
             new google.maps.LatLng(pickupLat, pickupLng),
             new google.maps.LatLng(destinationLat, destinationLng)
           );
-          const zoomLevel = distance > 50000 ? 10 : distance > 20000 ? 12 : 14;
+          setDistance(calculatedDistance);
+          const zoomLevel = calculatedDistance > 50000 ? 10 : calculatedDistance > 20000 ? 12 : 14;
           setZoom?.(zoomLevel);
         }
 
         setMarkersVisible?.(true);
+        setShowCarList(true); // Show car list after successful search
       } else {
         console.error("Invalid coordinates");
       }
@@ -78,6 +86,8 @@ const SearchSection = ({
       setMarkersVisible?.(false);
       setMapCenter?.({ lat: 20.5937, lng: 78.9629 });
       setZoom?.(5);
+      setDistance(0);
+      setShowCarList(false);
     }
   };
 
@@ -99,6 +109,8 @@ const SearchSection = ({
     if ((type === "pickup" && !destination) || (type === "destination" && !pickup)) {
       clearSearch?.();
       setMarkersVisible?.(false);
+      setDistance(0);
+      setShowCarList(false);
     }
   };
 
@@ -123,6 +135,12 @@ const SearchSection = ({
         console.error("Geocode error: ", status);
       }
     });
+  };
+
+  const handleCarSelect = (car) => {
+    setSelectedCar(car);
+    console.log("Selected car:", car);
+    // You can add more logic here like proceeding to booking
   };
 
   return (
@@ -233,12 +251,45 @@ const SearchSection = ({
           </div>
           <Slider
             value={priceRange}
-            max={100}
+            max={1000}
             step={1}
             onChange={(event, newValue) => setPriceRange(newValue)}
           />
         </CardContent>
       </Card>
+
+      {/* Car Options List - Only show after search */}
+      {showCarList && (
+        <div className="mb-6">
+          <CaroptionList
+            priceRange={priceRange}
+            distance={distance}
+            onCarSelect={handleCarSelect}
+            selectedCarId={selectedCar?.id}
+            showRecommended={true}
+          />
+        </div>
+      )}
+
+      {/* Selected Car Info */}
+      {selectedCar && (
+        <Card className="mb-6 !bg-blue-900 border border-blue-600">
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-white mb-2">Selected Ride</h3>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-white font-medium">{selectedCar.name}</p>
+                <p className="text-blue-200 text-sm">{selectedCar.description}</p>
+                <p className="text-blue-200 text-sm">Distance: ~{(distance / 1000).toFixed(1)} km</p>
+              </div>
+              <div className="text-right">
+                <p className="text-white font-bold text-lg">${selectedCar.finalPrice}</p>
+                <p className="text-blue-200 text-sm">{selectedCar.eta}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-"use client";
 import {
   ClerkProvider,
   SignInButton,
@@ -9,15 +8,21 @@ import {
 import './globals.css'
 import { dark } from '@clerk/themes'
 import Header from '@/components/Header'
-export default function RootLayout({children,}) {
+
+export const metadata = {
+  title: 'Your App Name',
+  description: 'Your app description',
+}
+
+export default function RootLayout({ children }) {
   return (
     <ClerkProvider  
       appearance={{
-      baseTheme: dark,
-    }}>
-      <html lang="en" webcrx="">
-        <body>
-          
+        baseTheme: dark,
+      }}
+    >
+      <html lang="en" suppressHydrationWarning={true}>
+        <body suppressHydrationWarning={true}>
           {children}
         </body>
       </html>

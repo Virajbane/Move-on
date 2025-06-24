@@ -4,22 +4,17 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-// ✅ Dynamically load WorldMap client-side only to avoid SSR issues
 const WorldMap = dynamic(() => import("@/components/ui/world-map").then(mod => mod.WorldMap), {
   ssr: false,
-  loading: () => <p className="text-white text-center py-10">Loading map...</p>,
+  loading: () => null, // No loading component since we handle it ourselves
 });
 
 export function WorldMapDemo() {
   const [mounted, setMounted] = useState(false);
 
-  // ✅ Wait until component is mounted to prevent hydration mismatches
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  
-  
 
   return (
     <div className="py-40 dark:bg-black bg-black w-full">
@@ -46,35 +41,41 @@ export function WorldMapDemo() {
         </p>
       </div>
 
-      {/* ✅ Safely load map after mount to avoid SSR issues */}
-      <WorldMap
-        dots={[
-          {
-            start: { lat: 64.2008, lng: -149.4937 },
-            end: { lat: 34.0522, lng: -118.2437 },
-          },
-          {
-            start: { lat: 64.2008, lng: -149.4937 },
-            end: { lat: -15.7975, lng: -47.8919 },
-          },
-          {
-            start: { lat: -15.7975, lng: -47.8919 },
-            end: { lat: 38.7223, lng: -9.1393 },
-          },
-          {
-            start: { lat: 51.5074, lng: -0.1278 },
-            end: { lat: 28.6139, lng: 77.209 },
-          },
-          {
-            start: { lat: 28.6139, lng: 77.209 },
-            end: { lat: 43.1332, lng: 131.9113 },
-          },
-          {
-            start: { lat: 28.6139, lng: 77.209 },
-            end: { lat: -1.2921, lng: 36.8219 },
-          },
-        ]}
-      />
+      {/* ✅ Conditional rendering with proper loading state */}
+      {mounted ? (
+        <WorldMap
+          dots={[
+            {
+              start: { lat: 64.2008, lng: -149.4937 },
+              end: { lat: 34.0522, lng: -118.2437 },
+            },
+            {
+              start: { lat: 64.2008, lng: -149.4937 },
+              end: { lat: -15.7975, lng: -47.8919 },
+            },
+            {
+              start: { lat: -15.7975, lng: -47.8919 },
+              end: { lat: 38.7223, lng: -9.1393 },
+            },
+            {
+              start: { lat: 51.5074, lng: -0.1278 },
+              end: { lat: 28.6139, lng: 77.209 },
+            },
+            {
+              start: { lat: 28.6139, lng: 77.209 },
+              end: { lat: 43.1332, lng: 131.9113 },
+            },
+            {
+              start: { lat: 28.6139, lng: 77.209 },
+              end: { lat: -1.2921, lng: 36.8219 },
+            },
+          ]}
+        />
+      ) : (
+        <div className="w-full h-64 flex items-center justify-center">
+          <p className="text-white text-center">Loading map...</p>
+        </div>
+      )}
     </div>
   );
 }

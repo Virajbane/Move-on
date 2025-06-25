@@ -9,6 +9,8 @@ import Button from "@mui/material/Button";
 import Slider from "@mui/material/Slider";
 import dynamic from "next/dynamic";
 import CaroptionList from "./utils/CarOption"; // Import the car list component
+import PaymentModal from "./Paymentmodal"; // Import the payment modal
+import PaymentSuccess from "./PaymentSuccess"; // Import the success component
 import "../app/globals.css";
 
 // ✅ Correctly load only once using apiKey prop
@@ -46,6 +48,11 @@ const SearchSection = ({
   const [selectedCar, setSelectedCar] = useState(null);
   const [distance, setDistance] = useState(0);
   const [showCarList, setShowCarList] = useState(false);
+
+  // Payment related states
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState(null);
 
   const handleSearchButtonClick = () => {
     if (pickup && destination) {
@@ -140,15 +147,58 @@ const SearchSection = ({
   const handleCarSelect = (car) => {
     setSelectedCar(car);
     console.log("Selected car:", car);
-    // You can add more logic here like proceeding to booking
+  };
+
+  // Handle book now button click
+  const handleBookNow = () => {
+    if (selectedCar && pickup && destination) {
+      setShowPaymentModal(true);
+    }
+  };
+
+  // Handle payment success
+  const handlePaymentSuccess = (details) => {
+    setPaymentDetails(details);
+    setShowPaymentModal(false);
+    setShowPaymentSuccess(true);
+    
+    // Clear the search and selections
+    setSelectedCar(null);
+    setShowCarList(false);
+    
+    console.log("Payment successful:", details);
+  };
+
+  // Handle close payment success
+  const handleClosePaymentSuccess = () => {
+    setShowPaymentSuccess(false);
+    setPaymentDetails(null);
+    
+    // Reset all states to initial
+    setPickup("");
+    setDestination("");
+    setPickupCoordinatesState({ lat: 0, lng: 0 });
+    setDestinationCoordinatesState({ lat: 0, lng: 0 });
+    setDistance(0);
+    clearSearch?.();
+    setMarkersVisible?.(false);
+  };
+
+  // Handle track ride
+  const handleTrackRide = () => {
+    setShowPaymentSuccess(false);
+    // Navigate to tracking page or show tracking modal
+    console.log("Tracking ride...");
+    // You can implement ride tracking logic here
   };
 
   return (
-    <div className="p-6 bg-[#0a0a0a] border-4 rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
-      {/* Get Ride */}
-      <div className="mb-8 border-4 rounded-[50px] border-gray-600">
-        <h2 className="text-xl font-bold ml-7 m-6">Get Ride</h2>
-        <div className="space-y-4 ml-6 mr-4 mb-5 flex flex-col items-center">
+    <>
+      <div className="p-6 bg-[#0a0a0a] border-4 rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
+        {/* Get Ride */}
+        <div className="mb-8 border-4 rounded-[50px] border-gray-600">
+          <h2 className="text-xl font-bold ml-7 m-6">Get Ride</h2>
+          <div className="space-y-4 ml-6 mr-4 mb-5 flex flex-col items-center">
           {/* Pickup */}
           <div className="relative w-full border-2 border-gray-700 rounded-lg">
             <MapPin className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -276,7 +326,7 @@ const SearchSection = ({
         <Card className="mb-6 !bg-blue-900 border border-blue-600">
           <CardContent className="p-4">
             <h3 className="font-semibold text-white mb-2">Selected Ride</h3>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <p className="text-white font-medium">{selectedCar.name}</p>
                 <p className="text-blue-200 text-sm">{selectedCar.description}</p>
@@ -287,10 +337,40 @@ const SearchSection = ({
                 <p className="text-blue-200 text-sm">{selectedCar.eta}</p>
               </div>
             </div>
+            {/* Book Now Button */}
+            <Button
+              onClick={handleBookNow}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold"
+            >
+              Book Now - ${selectedCar.finalPrice}
+            </Button>
           </CardContent>
         </Card>
       )}
     </div>
+
+    {/* Payment Modal */}
+    {showPaymentModal && (
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        selectedCar={selectedCar}
+        pickupLocation={pickup}
+        destinationLocation={destination}
+        distance={distance}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+    )}
+
+    {/* Payment Success Modal */}
+    {showPaymentSuccess && (
+      <PaymentSuccess
+        paymentDetails={paymentDetails}
+        onClose={handleClosePaymentSuccess}
+        onTrackRide={handleTrackRide}
+      />
+    )}
+  </>
   );
 };
 

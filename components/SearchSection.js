@@ -53,6 +53,8 @@ const SearchSection = ({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState(null);
+  const isBrowser = typeof window !== "undefined";
+
 
   const handleSearchButtonClick = () => {
     if (pickup && destination) {
@@ -337,7 +339,7 @@ const SearchSection = ({
                     isClearable: true,
                     className: "react-select-container",
                     classNamePrefix: "react-select",
-                    menuPortalTarget: document.body,
+                    menuPortalTarget:isBrowser ? document.body : null,
                     menuPosition: "fixed",
                     components: { 
                       DropdownIndicator: () => null,
@@ -427,7 +429,7 @@ const SearchSection = ({
                     isClearable: true,
                     className: "react-select-container",
                     classNamePrefix: "react-select",
-                    menuPortalTarget: document.body,
+                    menuPortalTarget: isBrowser ? document.body : null,
                     menuPosition: "fixed",
                     components: { 
                       DropdownIndicator: () => null,

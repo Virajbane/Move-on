@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, memo } from "react";
-import { Search, Clock, Navigation, MapPin } from "lucide-react";
+import { Search, Clock, Navigation, MapPin, ChevronDown } from "lucide-react";
 import Input from "@mui/material/Input";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -194,183 +194,494 @@ const SearchSection = ({
 
   return (
     <>
-      <div className="p-6 bg-[#0a0a0a] border-4 rounded-[50px] border-gray-800 overflow-y-auto mt-28 text-gray-100">
-        {/* Get Ride */}
-        <div className="mb-8 border-4 rounded-[50px] border-gray-600">
-          <h2 className="text-xl font-bold ml-7 m-6">Get Ride</h2>
-          <div className="space-y-4 ml-6 mr-4 mb-5 flex flex-col items-center">
-          {/* Pickup */}
-          <div className="relative w-full border-2 border-gray-700 rounded-lg">
-            <MapPin className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <MemoizedGooglePlacesAutocomplete
-              apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
-              selectProps={{
-                value: pickup ? { label: pickup, value: pickup } : null,
-                onChange: (selected) => {
-                  setPickup(selected?.label || "");
-                  handlePlaceSelect(selected, "pickup");
-                },
-                onClear: () => handleClear("pickup"),
-                placeholder: "Enter pickup location",
-                isClearable: true,
-                className: "w-[90%] ml-10 p-3",
-                components: { DropdownIndicator: false },
-                styles: {
-                  control: (provided) => ({ ...provided, borderColor: "gray", backgroundColor: "black", color: "white" }),
-                  input: (provided) => ({ ...provided, color: "white" }),
-                  option: (provided) => ({ ...provided, color: "black" }),
-                },
-              }}
-            />
+      <style jsx>{`
+        @keyframes slideInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes pulseGlow {
+          0%, 100% {
+            box-shadow: 0 0 5px rgba(168, 85, 247, 0.4);
+          }
+          50% {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4);
+          }
+        }
+
+        .animate-slideInUp {
+          animation: slideInUp 0.5s ease-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-pulseGlow {
+          animation: pulseGlow 2s infinite;
+        }
+
+        .glass-effect {
+          background: rgba(17, 24, 39, 0.7);
+          backdrop-filter: blur(16px);
+          border: 1px solid rgba(75, 85, 99, 0.3);
+        }
+
+        .input-glass {
+          background: rgba(55, 65, 81, 0.4);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(75, 85, 99, 0.2);
+          transition: all 0.3s ease;
+          position: relative;
+          z-index: 1;
+        }
+
+        .input-glass:hover {
+          background: rgba(55, 65, 81, 0.6);
+          border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .input-glass:focus-within {
+          background: rgba(55, 65, 81, 0.7);
+          border-color: rgba(168, 85, 247, 0.5);
+          box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+          z-index: 1000;
+        }
+
+        /* Ensure dropdown containers have proper z-index */
+        .dropdown-container {
+          position: relative;
+          z-index: 100;
+        }
+
+        .dropdown-container.active {
+          z-index: 1000;
+        }
+
+        /* Recent searches dropdown */
+        .recent-searches-dropdown {
+          position: relative;
+          z-index: 50;
+        }
+
+        /* Car list container */
+        .car-list-container {
+          position: relative;
+          z-index: 40;
+        }
+
+        /* Payment modals */
+        .payment-modal {
+          z-index: 2000;
+        }
+
+        /* Google Places specific z-index fixes */
+        .react-select-container {
+          position: relative;
+          z-index: 100;
+        }
+
+        .react-select-container .react-select__menu {
+          z-index: 1000 !important;
+        }
+
+        /* Override any conflicting z-index */
+        .react-select__menu-portal {
+          z-index: 1000 !important;
+        }
+      `}</style>
+
+      <div className="w-full max-w-md mt-28 mx-auto p-4 bg-black/95 rounded-3xl shadow-2xl overflow-y-auto max-h-screen border border-gray-800/50 animate-slideInUp">
+        
+        {/* Get Ride Section */}
+        <div className="mb-6 glass-effect rounded-3xl p-6 animate-fadeIn">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              Get Ride
+            </h2>
+            <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto mt-2 animate-pulseGlow"></div>
           </div>
-
-          {/* Destination */}
-          <div className="relative w-full border-2 border-gray-700 rounded-lg">
-            <Navigation className="absolute z-10 left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <MemoizedGooglePlacesAutocomplete
-              apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
-              selectProps={{
-                value: destination ? { label: destination, value: destination } : null,
-                onChange: (selected) => {
-                  setDestination(selected?.label || "");
-                  handlePlaceSelect(selected, "destination");
-                },
-                onClear: () => handleClear("destination"),
-                placeholder: "Enter drop location",
-                isClearable: true,
-                className: "w-[90%] ml-10 p-3",
-                components: { DropdownIndicator: false },
-                styles: {
-                  control: (provided) => ({ ...provided, borderColor: "gray", backgroundColor: "black", color: "white" }),
-                  input: (provided) => ({ ...provided, color: "white" }),
-                  option: (provided) => ({ ...provided, color: "black" }),
-                },
-              }}
-            />
-          </div>
-
-          {/* Button */}
-          <Button
-            className="w-[90%] text-white hover:bg-blue-700 hover:text-white"
-            onClick={OnSearchButtonClick}
-          >
-            <Search className="w-4 h-4 mr-2" />
-            Search Rides
-          </Button>
-        </div>
-      </div>
-
-      {/* Recent Searches */}
-      <div className="mb-8">
-        <h3 className="font-semibold mb-4 text-gray-100 cursor-pointer" onClick={() => setShowRecentSearches(!showRecentSearches)}>
-          Recent Searches
-        </h3>
-        {showRecentSearches && (
-          <div className="space-y-3">
-            {recentSearches.slice(0, 5).map((search) => (
-              <div
-                key={search.id}
-                onClick={() => setActiveSearchId((prev) => (prev === search.id ? null : search.id))}
-                className={`flex flex-col p-3 rounded-lg cursor-pointer transition-colors border ${
-                  activeSearchId === search.id ? "bg-gray-700 border-gray-600" : "bg-gray-800 border-gray-700"
-                }`}
-              >
-                <div className="flex items-center">
-                  <Clock className="w-4 h-4 text-gray-400 mr-3" />
-                  <p className="font-medium text-gray-100">{search.pickup} → {search.destination}</p>
-                </div>
-                {activeSearchId === search.id && (
-                  <div className="mt-2 text-sm text-gray-400">
-                    <p>Pickup: {search.pickup}</p>
-                    <p>Destination: {search.destination}</p>
-                    <p>Type: {search.type}</p>
-                  </div>
-                )}
+          
+          <div className="space-y-4">
+            {/* Pickup Input */}
+            <div className="relative group dropdown-container">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 transition-colors duration-300 group-hover:text-purple-300">
+                <MapPin className="w-5 h-5 text-purple-400" />
               </div>
-            ))}
+              <div className="input-glass rounded-2xl">
+                <MemoizedGooglePlacesAutocomplete
+                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
+                  selectProps={{
+                    value: pickup ? { label: pickup, value: pickup } : null,
+                    onChange: (selected) => {
+                      setPickup(selected?.label || "");
+                      handlePlaceSelect(selected, "pickup");
+                    },
+                    onClear: () => handleClear("pickup"),
+                    placeholder: "Enter pickup location",
+                    isClearable: true,
+                    className: "react-select-container",
+                    classNamePrefix: "react-select",
+                    menuPortalTarget: document.body,
+                    menuPosition: "fixed",
+                    components: { 
+                      DropdownIndicator: () => null,
+                      IndicatorSeparator: () => null 
+                    },
+                    styles: {
+                      control: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        paddingLeft: '2.5rem',
+                        paddingRight: '1rem',
+                        paddingTop: '1rem',
+                        paddingBottom: '1rem',
+                        color: 'white',
+                        fontSize: '16px',
+                        boxShadow: 'none',
+                        minHeight: '56px',
+                        '&:hover': {
+                          border: 'none'
+                        }
+                      }),
+                      input: (provided) => ({
+                        ...provided,
+                        color: 'white',
+                        margin: 0,
+                        padding: 0
+                      }),
+                      placeholder: (provided) => ({
+                        ...provided,
+                        color: '#9CA3AF',
+                        fontSize: '16px'
+                      }),
+                      singleValue: (provided) => ({
+                        ...provided,
+                        color: 'white'
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        backdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(75, 85, 99, 0.3)',
+                        borderRadius: '1rem',
+                        zIndex: 1000
+                      }),
+                      menuPortal: (provided) => ({
+                        ...provided,
+                        zIndex: 1000
+                      }),
+                      option: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: state.isFocused ? 'rgba(55, 65, 81, 0.8)' : 'transparent',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(55, 65, 81, 0.8)'
+                        }
+                      }),
+                      clearIndicator: (provided) => ({
+                        ...provided,
+                        color: '#9CA3AF',
+                        '&:hover': {
+                          color: 'white'
+                        }
+                      })
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Destination Input */}
+            <div className="relative group dropdown-container">
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 transition-colors duration-300 group-hover:text-cyan-300">
+                <Navigation className="w-5 h-5 text-cyan-400" />
+              </div>
+              <div className="input-glass rounded-2xl">
+                <MemoizedGooglePlacesAutocomplete
+                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_API_KEY}
+                  selectProps={{
+                    value: destination ? { label: destination, value: destination } : null,
+                    onChange: (selected) => {
+                      setDestination(selected?.label || "");
+                      handlePlaceSelect(selected, "destination");
+                    },
+                    onClear: () => handleClear("destination"),
+                    placeholder: "Enter destination",
+                    isClearable: true,
+                    className: "react-select-container",
+                    classNamePrefix: "react-select",
+                    menuPortalTarget: document.body,
+                    menuPosition: "fixed",
+                    components: { 
+                      DropdownIndicator: () => null,
+                      IndicatorSeparator: () => null 
+                    },
+                    styles: {
+                      control: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: 'transparent',
+                        border: 'none',
+                        paddingLeft: '2.5rem',
+                        paddingRight: '1rem',
+                        paddingTop: '1rem',
+                        paddingBottom: '1rem',
+                        color: 'white',
+                        fontSize: '16px',
+                        boxShadow: 'none',
+                        minHeight: '56px',
+                        '&:hover': {
+                          border: 'none'
+                        }
+                      }),
+                      input: (provided) => ({
+                        ...provided,
+                        color: 'white',
+                        margin: 0,
+                        padding: 0
+                      }),
+                      placeholder: (provided) => ({
+                        ...provided,
+                        color: '#9CA3AF',
+                        fontSize: '16px'
+                      }),
+                      singleValue: (provided) => ({
+                        ...provided,
+                        color: 'white'
+                      }),
+                      menu: (provided) => ({
+                        ...provided,
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        backdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(75, 85, 99, 0.3)',
+                        borderRadius: '1rem',
+                        zIndex: 1000
+                      }),
+                      menuPortal: (provided) => ({
+                        ...provided,
+                        zIndex: 1000
+                      }),
+                      option: (provided, state) => ({
+                        ...provided,
+                        backgroundColor: state.isFocused ? 'rgba(55, 65, 81, 0.8)' : 'transparent',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(55, 65, 81, 0.8)'
+                        }
+                      }),
+                      clearIndicator: (provided) => ({
+                        ...provided,
+                        color: '#9CA3AF',
+                        '&:hover': {
+                          color: 'white'
+                        }
+                      })
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Search Button */}
+            <button
+              onClick={OnSearchButtonClick}
+              className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 hover:from-purple-600 hover:via-pink-600 hover:to-cyan-600 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl hover:scale-[1.02] text-lg transform"
+            >
+              <Search className="w-6 h-6" />
+              <span>Search Rides</span>
+              <div className="text-xl animate-pulse">✨</div>
+            </button>
+          </div>
+        </div>
+
+        {/* Recent Searches */}
+        <div className="mb-6 animate-fadeIn recent-searches-dropdown" style={{ animationDelay: '0.2s' }}>
+          <button 
+            onClick={() => setShowRecentSearches(!showRecentSearches)}
+            className="flex items-center justify-between w-full p-4 glass-effect rounded-2xl hover:bg-gray-800/40 transition-all duration-300 group"
+          >
+            <div className="flex items-center text-gray-300 group-hover:text-white transition-colors duration-300">
+              <Clock className="w-5 h-5 mr-3" />
+              <span className="font-medium">Recent Searches</span>
+            </div>
+            <ChevronDown className={`w-5 h-5 text-gray-400 transform transition-all duration-300 group-hover:text-white ${showRecentSearches ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showRecentSearches && (
+            <div className="mt-4 space-y-3 animate-slideInUp relative z-50">
+              {recentSearches.slice(0, 5).map((search, index) => (
+                <div
+                  key={search.id}
+                  onClick={() => setActiveSearchId((prev) => (prev === search.id ? null : search.id))}
+                  className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 border animate-fadeIn ${
+                    activeSearchId === search.id 
+                      ? "glass-effect border-purple-500/50 shadow-lg" 
+                      : "glass-effect border-gray-600/30 hover:bg-gray-700/40 hover:border-gray-500/50"
+                  }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-100 text-sm">
+                        {search.pickup.length > 20 ? search.pickup.substring(0, 20) + '...' : search.pickup}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        → {search.destination.length > 20 ? search.destination.substring(0, 20) + '...' : search.destination}
+                      </p>
+                    </div>
+                    <span className="text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-1 rounded-full font-medium">
+                      {search.type}
+                    </span>
+                  </div>
+                  
+                  {activeSearchId === search.id && (
+                    <div className="mt-3 pt-3 border-t border-gray-600/50 space-y-2 animate-fadeIn">
+                      <p className="text-sm text-gray-300">
+                        <span className="font-medium text-purple-400">From:</span> {search.pickup}
+                      </p>
+                      <p className="text-sm text-gray-300">
+                        <span className="font-medium text-cyan-400">To:</span> {search.destination}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Price Range */}
+        <div className="mb-6 glass-effect rounded-2xl p-6 animate-fadeIn" style={{ animationDelay: '0.3s' }}>
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center">
+              <span className="text-2xl mr-3">💲</span>
+              <h3 className="font-bold text-white text-lg">Price Range</h3>
+            </div>
+            <span className="text-lg font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+              ${priceRange[0]} - ${priceRange[1]}
+            </span>
+          </div>
+          <div className="px-2">
+            <Slider
+              value={priceRange}
+              max={1000}
+              step={1}
+              onChange={(event, newValue) => setPriceRange(newValue)}
+              sx={{
+                color: '#06b6d4',
+                height: 8,
+                '& .MuiSlider-thumb': {
+                  backgroundColor: '#06b6d4',
+                  border: '3px solid #0891b2',
+                  width: 24,
+                  height: 24,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    boxShadow: '0px 0px 0px 10px rgba(6, 182, 212, 0.16)',
+                    transform: 'scale(1.2)',
+                  },
+                },
+                '& .MuiSlider-track': {
+                  backgroundColor: '#06b6d4',
+                  border: 'none',
+                  height: 8,
+                  transition: 'all 0.3s ease',
+                },
+                '& .MuiSlider-rail': {
+                  backgroundColor: '#374151',
+                  height: 8,
+                },
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Car Options List */}
+        {showCarList && (
+          <div className="mb-6 animate-slideInUp car-list-container">
+            <CaroptionList
+              priceRange={priceRange}
+              distance={distance}
+              onCarSelect={handleCarSelect}
+              selectedCarId={selectedCar?.id}
+              showRecommended={true}
+            />
+          </div>
+        )}
+
+        {/* Selected Car Info */}
+        {selectedCar && (
+          <div className="mb-6 glass-effect rounded-2xl p-6 shadow-xl animate-slideInUp">
+            <h3 className="font-bold text-white mb-4 flex items-center text-lg">
+              <span className="w-3 h-3 bg-green-400 rounded-full mr-3 animate-pulse"></span>
+              Selected Ride
+            </h3>
+            <div className="flex justify-between items-center mb-6">
+              <div className="flex-1">
+                <p className="text-white font-bold text-xl">{selectedCar.name}</p>
+                <p className="text-gray-300 text-sm mb-2">{selectedCar.description}</p>
+                <p className="text-gray-300 text-sm">
+                  Distance: ~{(distance / 1000).toFixed(1)} km
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-white font-bold text-2xl">${selectedCar.finalPrice}</p>
+                <p className="text-gray-300 text-sm">{selectedCar.eta}</p>
+              </div>
+            </div>
+            
+            <button
+              onClick={handleBookNow}
+              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-4 px-6 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-[1.02] text-lg transform"
+            >
+              Book Now - ${selectedCar.finalPrice}
+            </button>
           </div>
         )}
       </div>
 
-      {/* Price Range */}
-      <Card className="mb-6 !bg-gray-800 border border-gray-700">
-        <CardContent className="p-4">
-          <div className="flex justify-between mb-2">
-            <h3 className="font-semibold text-gray-100">Price Range</h3>
-            <span className="text-sm text-gray-400">${priceRange[0]} - ${priceRange[1]}</span>
-          </div>
-          <Slider
-            value={priceRange}
-            max={1000}
-            step={1}
-            onChange={(event, newValue) => setPriceRange(newValue)}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Car Options List - Only show after search */}
-      {showCarList && (
-        <div className="mb-6">
-          <CaroptionList
-            priceRange={priceRange}
+      {/* Payment Modal */}
+      {showPaymentModal && (
+        <div className="payment-modal">
+          <PaymentModal
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            selectedCar={selectedCar}
+            pickupLocation={pickup}
+            destinationLocation={destination}
             distance={distance}
-            onCarSelect={handleCarSelect}
-            selectedCarId={selectedCar?.id}
-            showRecommended={true}
+            onPaymentSuccess={handlePaymentSuccess}
           />
         </div>
       )}
 
-      {/* Selected Car Info */}
-      {selectedCar && (
-        <Card className="mb-6 !bg-blue-900 border border-blue-600">
-          <CardContent className="p-4">
-            <h3 className="font-semibold text-white mb-2">Selected Ride</h3>
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <p className="text-white font-medium">{selectedCar.name}</p>
-                <p className="text-blue-200 text-sm">{selectedCar.description}</p>
-                <p className="text-blue-200 text-sm">Distance: ~{(distance / 1000).toFixed(1)} km</p>
-              </div>
-              <div className="text-right">
-                <p className="text-white font-bold text-lg">${selectedCar.finalPrice}</p>
-                <p className="text-blue-200 text-sm">{selectedCar.eta}</p>
-              </div>
-            </div>
-            {/* Book Now Button */}
-            <Button
-              onClick={handleBookNow}
-              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold"
-            >
-              Book Now - ${selectedCar.finalPrice}
-            </Button>
-          </CardContent>
-        </Card>
+      {/* Payment Success Modal */}
+      {showPaymentSuccess && (
+        <div className="payment-modal">
+          <PaymentSuccess
+            paymentDetails={paymentDetails}
+            onClose={handleClosePaymentSuccess}
+            onTrackRide={handleTrackRide}
+          />
+        </div>
       )}
-    </div>
-
-    {/* Payment Modal */}
-    {showPaymentModal && (
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        selectedCar={selectedCar}
-        pickupLocation={pickup}
-        destinationLocation={destination}
-        distance={distance}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
-    )}
-
-    {/* Payment Success Modal */}
-    {showPaymentSuccess && (
-      <PaymentSuccess
-        paymentDetails={paymentDetails}
-        onClose={handleClosePaymentSuccess}
-        onTrackRide={handleTrackRide}
-      />
-    )}
-  </>
+    </>
   );
 };
 
